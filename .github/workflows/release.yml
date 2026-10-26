@@ -1,0 +1,39 @@
+name: Release
+
+# Push a tag v<version> matching plugin.json to publish a GitHub Release.
+#
+# The release is marked pre-release because the plugin needs plugin API 4,
+# which no stable Lithe ships yet. Lithe Store's tracker skips pre-releases, so
+# the store index is not updated by itself. Once a stable Lithe supports API 4,
+# remove --prerelease below and promote the release.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build archive
+        run: node scripts/package.mjs --expect-tag "$GITHUB_REF_NAME" | tee "$RUNNER_TEMP/checksums.txt"
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            echo "需要支持插件 API 4 的 Lithe（目前是 preview 开发版）。在 Lithe 的 设置 → 插件 → ⚙ → 从磁盘安装插件… 中选择下面的 zip，确认权限后安装。"
+            echo
+            echo "SHA-256："
+            echo '```'
+            sed 's#^dist/##' "$RUNNER_TEMP/checksums.txt"
+            echo '```'
+          } > "$RUNNER_TEMP/notes.md"
+          gh release create "$GITHUB_REF_NAME" dist/*.zip --prerelease --title "LLDB Debugger $GITHUB_REF_NAME" --notes-file "$RUNNER_TEMP/notes.md"
