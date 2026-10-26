@@ -14,12 +14,17 @@
 
 ## 安装 / Install
 
-这个版本是预发布，还没有收录到 Lithe Store：
+这个版本是预发布，已收录在 Lithe Store，但只有支持插件 API 4 的 Lithe 才能安装；不支持的版本会提示升级，而不是安装。
+
+**从插件市场安装**：在支持 API 4 的 Lithe 中打开 **设置 → 插件**，在市场里找到 *LLDB Debugger*，确认权限后安装。
+
+**从磁盘安装**：
 
 1. 下载 [Releases](https://github.com/Lithe-IDEA/lithe-plugin-lldb/releases) 里的 `lldb-debug-<版本>-darwin.zip`。
 2. 在 Lithe 中打开 **设置 → 插件**，点右上角 ⚙，选择 **从磁盘安装插件…**，选中这个 zip，确认权限后安装。
    Lithe 如果提示需要重启，按提示重启即可。
-3. 打开 C / Rust / Swift 文件，设置断点并开始调试。
+
+装好后打开 C / Rust / Swift 文件，设置断点并开始调试。
 
 插件会请求 `debug.launch` 权限，并运行你电脑上的 `lldb-dap`。
 
