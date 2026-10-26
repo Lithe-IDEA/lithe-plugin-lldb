@@ -1,0 +1,240 @@
+{
+  "schemaVersion": 2,
+  "id": "io.github.lithe-idea.lldb-debug",
+  "displayName": "LLDB Debugger",
+  "version": "0.1.0",
+  "pluginAPIVersion": 4,
+  "requires": {
+    "debugAdapters": 1,
+    "languages": 1,
+    "serverProcess": 1,
+    "settings": 2
+  },
+  "vendor": {
+    "id": "io.github.lithe-idea",
+    "displayName": "Lithe-IDEA",
+    "signatureRequirement": "none"
+  },
+  "permissions": [
+    "debug.launch"
+  ],
+  "activationEvents": [
+    "onDebug:lldb"
+  ],
+  "settings": [
+    {
+      "id": "program",
+      "type": "file",
+      "title": "Program",
+      "description": "The program to debug. When this is empty, Lithe looks next to the open file (app.c → app) and in build/ under the project, and uses the first runnable file it finds. Build one with debug information first, for example: clang -g main.c -o main (gcc -g works too). Debugging needs lldb-dap: install the Xcode Command Line Tools with xcode-select --install, or install Xcode, and Lithe finds it by itself.",
+      "default": "",
+      "placeholder": "Not found — build with -g first",
+      "scope": "project",
+      "effect": "nextRun"
+    }
+  ],
+  "languages": [
+    {
+      "id": "clangd",
+      "displayName": "C/C++/Objective-C",
+      "fileExtensions": [
+        "c",
+        "h",
+        "hh",
+        "hpp",
+        "hxx",
+        "cpp",
+        "cc",
+        "cxx",
+        "m",
+        "mm"
+      ]
+    },
+    {
+      "id": "rust",
+      "displayName": "Rust",
+      "fileExtensions": [
+        "rs"
+      ]
+    },
+    {
+      "id": "swift",
+      "displayName": "Swift",
+      "fileExtensions": [
+        "swift"
+      ]
+    }
+  ],
+  "debugAdapters": [
+    {
+      "id": "lldb",
+      "displayName": "LLDB",
+      "adapterID": "lldb-dap",
+      "requests": [
+        "launch"
+      ],
+      "selectors": [
+        {
+          "targetKinds": [
+            "file"
+          ],
+          "languageIDs": [
+            "clangd",
+            "rust",
+            "swift"
+          ]
+        }
+      ],
+      "configurationTypes": [
+        "lldb"
+      ],
+      "configurations": {
+        "launch": {
+          "arguments": {
+            "stopOnEntry": false
+          },
+          "targetBindings": {
+            "program": "target.executable",
+            "cwd": "target.workingDirectory"
+          },
+          "executable": {
+            "setting": "program",
+            "candidates": [
+              "${fileDirectory}/${fileBasenameNoExtension}",
+              "${workspaceFolder}/${fileBasenameNoExtension}",
+              "${workspaceFolder}/build/${fileBasenameNoExtension}"
+            ]
+          }
+        }
+      },
+      "console": {
+        "commandPrefix": "`",
+        "commands": [
+          {
+            "name": "breakpoint delete",
+            "description": "Delete breakpoints"
+          },
+          {
+            "name": "breakpoint disable",
+            "description": "Disable breakpoints"
+          },
+          {
+            "name": "breakpoint enable",
+            "description": "Enable breakpoints"
+          },
+          {
+            "name": "breakpoint list",
+            "description": "List all breakpoints"
+          },
+          {
+            "name": "breakpoint set",
+            "description": "Set a breakpoint by file, line, function or address"
+          },
+          {
+            "name": "disassemble",
+            "description": "Disassemble the current function or a range"
+          },
+          {
+            "name": "expression",
+            "description": "Evaluate an expression in the selected frame"
+          },
+          {
+            "name": "frame info",
+            "description": "Show the selected frame"
+          },
+          {
+            "name": "frame select",
+            "description": "Select a different stack frame"
+          },
+          {
+            "name": "frame variable",
+            "description": "Show the arguments and local variables of the selected frame"
+          },
+          {
+            "name": "help",
+            "description": "Show the commands lldb knows"
+          },
+          {
+            "name": "image lookup",
+            "description": "Find an address, symbol or type in loaded images"
+          },
+          {
+            "name": "memory read",
+            "description": "Read process memory"
+          },
+          {
+            "name": "print",
+            "description": "Evaluate an expression and print the result"
+          },
+          {
+            "name": "process continue",
+            "description": "Resume the process"
+          },
+          {
+            "name": "process status",
+            "description": "Show the state of the process"
+          },
+          {
+            "name": "register read",
+            "description": "Read the registers of the selected frame"
+          },
+          {
+            "name": "source list",
+            "description": "Show source lines around the stop location"
+          },
+          {
+            "name": "target list",
+            "description": "List the targets"
+          },
+          {
+            "name": "thread backtrace",
+            "description": "Show the call stack of a thread"
+          },
+          {
+            "name": "thread list",
+            "description": "List the threads of the process"
+          },
+          {
+            "name": "thread return",
+            "description": "Return from the selected frame now"
+          },
+          {
+            "name": "thread select",
+            "description": "Select a thread"
+          },
+          {
+            "name": "thread step-in",
+            "description": "Step into the current line"
+          },
+          {
+            "name": "thread step-out",
+            "description": "Run until the current function returns"
+          },
+          {
+            "name": "thread step-over",
+            "description": "Step over the current line"
+          },
+          {
+            "name": "watchpoint list",
+            "description": "List all watchpoints"
+          },
+          {
+            "name": "watchpoint set variable",
+            "description": "Stop when a variable is written"
+          }
+        ]
+      },
+      "launch": {
+        "process": {
+          "launch": {
+            "kind": "systemCommand",
+            "commands": [
+              "lldb-dap"
+            ]
+          }
+        },
+        "transport": "stdio"
+      }
+    }
+  ]
+}
