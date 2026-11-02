@@ -1,5 +1,7 @@
 # LLDB Debugger for Lithe
 
+<img src="assets/lldb.svg" width="64" height="64" alt="">
+
 为 [Lithe](https://github.com/1lck/Lithe-IDEA) 提供 C / C++ / Objective-C / Swift / Rust 调试，调试器是你电脑上的
 [`lldb-dap`](https://lldb.llvm.org/resources/lldbdap.html)。这是一个**社区插件**。
 
