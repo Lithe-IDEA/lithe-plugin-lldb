@@ -51,6 +51,14 @@
 原生启动和进程异常退出的固定阶段/退出码记录到 `debug`。程序输出、调试表达式和变量内容属于调试控制台，
 不得复制到诊断日志。适配器原始 stderr 仍由宿主调试控制台呈现，不代表已作为 v2 文件持久化。
 
+插件没有自己的进程发送 `lithe/log`，宿主因此替插件把每次 `lldb-dap` 启动尝试记成与 SDK 插件
+同一组的操作事实，写入 `plugins/io.github.lithe-idea.lldb-debug/host` 通道，操作名为
+`debugAdapter/start`：调试会话就绪记 `plugins.operation.finished`（INFO，含耗时）；失败记
+`plugins.operation.failed`（ERROR），失败码只取自启动阶段——`host.executableUnavailable`（无法解析
+`lldb-dap` 启动命令）、`host.launchFailed`（进程拉起失败）、`host.initializeFailed`（DAP 初始化失败）、
+`host.exitedEarly`（就绪前退出）、`host.timedOut`（初始化超时）。用户停止和取消不记录；事实不含程序输出、
+变量、路径或命令行。插件不需要任何日志代码，宿主实现见 https://github.com/1lck/Lithe-IDEA/pull/1720。
+
 排障时使用 Lithe 的独立日志窗口和诊断导出，并同时检查调试控制台。
 不要启用 `LLDBDAP_LOG`、完整 DAP 通信转储或以变量、内存、源码和环境内容补充诊断日志。
 日志文件不得写入插件安装目录。Windows 的日志实现仍为 v1；本文没有声明 Windows 已完成 v2 验收。
