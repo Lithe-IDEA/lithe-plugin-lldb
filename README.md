@@ -3,78 +3,88 @@
 <img src="assets/lldb.svg" width="64" height="64" alt="">
 
 为 [Lithe](https://github.com/1lck/Lithe-IDEA) 提供 C / C++ / Objective-C / Swift / Rust 调试，调试器是你电脑上的
-[`lldb-dap`](https://lldb.llvm.org/resources/lldbdap.html)。这是一个**社区插件**。
+[`lldb-dap`](https://lldb.llvm.org/resources/lldbdap.html)。这是一个**社区插件**，用插件契约 v0 的声明式调试适配器接口
+（`debugAdapters`）实现：插件只有一份 `plugin.json`，没有后端进程，也不带调试器。
 
 > English: Debug C / C++ / Objective-C / Swift / Rust programs in Lithe through your own
-> [`lldb-dap`](https://lldb.llvm.org/resources/lldbdap.html). A community plugin.
+> [`lldb-dap`](https://lldb.llvm.org/resources/lldbdap.html). A community plugin built on the declarative
+> `debugAdapters` contract; it is a single `plugin.json` and carries no debugger.
 
-## 前置条件 / Requirements
+> **预发布**：按插件契约 v0（`schemaVersion: 0`、`pluginAPIVersion: 0`）编写，只能装进新版 Lithe 桌面端
+> （`desktop-v*` 预发布），旧版 macOS Lithe 无法安装。
 
-- Lithe 需要支持插件 API 4（目前是 preview 开发版，稳定版还没有）。
-- `lldb-dap` 在 `PATH` 中。macOS：`xcode-select --install`，或安装 LLVM。插件不内置任何调试器。
+## 依赖的程序
+
+- `lldb-dap`。Lithe 先在 `PATH` 里找，找不到时在 macOS 上用 `xcrun --find lldb-dap` 找 Xcode 自带的版本。
+  可以用 `xcode-select --install` 安装 Xcode 命令行工具，或者安装 Xcode 或 LLVM。
 - 带调试信息的程序，例如 `clang -g main.c -o main`（`gcc -g` 也可以）。
 
-## 安装 / Install
+## 安装
 
-这个版本是预发布，已收录在 Lithe Store，但只有支持插件 API 4 的 Lithe 才能安装；不支持的版本会提示升级，而不是安装。
+1. 从 [Releases](https://github.com/Lithe-IDEA/lithe-plugin-lldb/releases) 下载 `lldb-debug-<版本>-darwin.zip`。
+2. 在 Lithe 中打开 **设置 → 插件**，点击页面标题栏右侧的 **从文件安装…**，选中这个 zip，核对 SHA-256 和权限后确认。
 
-**从插件市场安装**：在支持 API 4 的 Lithe 中打开 **设置 → 插件**，在市场里找到 *LLDB Debugger*，确认权限后安装。
+插件会请求 `debug.launch` 权限，用来启动你电脑上的 `lldb-dap`。装好后打开 C / Rust / Swift 文件，设置断点并开始调试。
 
-**从磁盘安装**：
+## 可执行文件设置
 
-1. 下载 [Releases](https://github.com/Lithe-IDEA/lithe-plugin-lldb/releases) 里的 `lldb-debug-<版本>-darwin.zip`。
-2. 在 Lithe 中打开 **设置 → 插件**，点右上角 ⚙，选择 **从磁盘安装插件…**，选中这个 zip，确认权限后安装。
-   Lithe 如果提示需要重启，按提示重启即可。
+插件不写死程序路径。Lithe 按下面的顺序寻找要调试的可执行文件：
 
-装好后打开 C / Rust / Swift 文件，设置断点并开始调试。
+1. 插件设置 **Program**（`program`），填写后以它为准；
+2. `<当前文件所在目录>/<不带扩展名的文件名>`；
+3. `<项目根目录>/<不带扩展名的文件名>`；
+4. `<项目根目录>/build/<不带扩展名的文件名>`。
 
-插件会请求 `debug.launch` 权限，并运行你电脑上的 `lldb-dap`。
+Program 设置按项目保存，修改后从下一次调试开始生效。
 
-## 可执行文件设置 / Program setting
-
-插件不写死程序路径。Lithe 按下面的顺序寻找可执行文件，并把结果回显在插件设置里：
-
-1. `program` 设置，你填了就以它为准。
-2. `<当前文件所在目录>/<不带扩展名的文件名>`
-3. `<项目根目录>/<不带扩展名的文件名>`
-4. `<项目根目录>/build/<不带扩展名的文件名>`
-
-## 控制台 / Console
+## 控制台
 
 在调试控制台里输入 `` ` `` 加 lldb 命令（例如 `` `bt``）。命令补全来自插件声明的列表和 `lldb-dap` 自己的补全。
 
-## 诊断日志 / Diagnostic logs
+## 诊断日志
 
-此插件通过宿主的通用 DAP 传输启动 `lldb-dap`，没有独立后端或日志 writer。
-结构化日志 v2 的 Core 生命周期和操作分类记录到 `debug/lldb-dap` 通道；
-关键生命周期为 INFO，运行/暂停等内部状态为 DEBUG，超时和适配器拒绝为 ERROR，取消不算失败。
-原生启动和进程异常退出的固定阶段/退出码记录到 `debug`。程序输出、调试表达式和变量内容属于调试控制台，
-不得复制到诊断日志。适配器原始 stderr 仍由宿主调试控制台呈现，不代表已作为 v2 文件持久化。
+插件没有自己的进程，也不发送 `lithe/log`。`lldb-dap` 由 Lithe 启动，启动成败由 Lithe 记录；
+程序输出、调试表达式、变量内容和适配器的原始输出只显示在调试控制台，不写进日志。
+排障时使用 Lithe 的日志窗口和诊断导出，并同时检查调试控制台。不要启用 `LLDBDAP_LOG`、完整 DAP 通信转储，
+也不要用变量、内存、源码或环境内容补充诊断日志。
 
-插件没有自己的进程发送 `lithe/log`，宿主因此替插件把每次 `lldb-dap` 启动尝试记成与 SDK 插件
-同一组的操作事实，写入 `plugins/io.github.lithe-idea.lldb-debug/host` 通道，操作名为
-`debugAdapter/start`：调试会话就绪记 `plugins.operation.finished`（INFO，含耗时）；失败记
-`plugins.operation.failed`（ERROR），失败码只取自启动阶段——`host.executableUnavailable`（无法解析
-`lldb-dap` 启动命令）、`host.launchFailed`（进程拉起失败）、`host.initializeFailed`（DAP 初始化失败）、
-`host.exitedEarly`（就绪前退出）、`host.timedOut`（初始化超时）。用户停止和取消不记录；事实不含程序输出、
-变量、路径或命令行。插件不需要任何日志代码，宿主实现见 https://github.com/1lck/Lithe-IDEA/pull/1720。
-
-排障时使用 Lithe 的独立日志窗口和诊断导出，并同时检查调试控制台。
-不要启用 `LLDBDAP_LOG`、完整 DAP 通信转储或以变量、内存、源码和环境内容补充诊断日志。
-日志文件不得写入插件安装目录。Windows 的日志实现仍为 v1；本文没有声明 Windows 已完成 v2 验收。
-
-## 开发 / Development
+## 开发
 
 ```text
 io.github.lithe-idea.lldb-debug/plugin.json   # 插件描述，目录名必须等于插件 id
 scripts/package.mjs                           # 校验清单，打包成 dist/lldb-debug-<版本>-darwin.zip
 .github/workflows/ci.yml                      # PR 时打包，并用 Lithe Store 的规则检查
-.github/workflows/release.yml                 # 推送 v<版本> 标签时发布 GitHub Release（预发布）
+.github/workflows/release.yml                 # 推送 v<版本> 标签时发布 GitHub Release
+docs/releases/v<版本>.md                       # 该版本的变化，发布时并入 Release 说明（可选）
 ```
 
-插件开发资料见 [lithe-plugin-docs](https://github.com/Lithe-IDEA/lithe-plugin-docs)。
-发布新版本：递增 `plugin.json` 的 `version`，推送对应的 `v<版本>` 标签。
+本地需要 Node.js 22+ 和 `zip`：
 
-## 许可 / License
+```bash
+node scripts/package.mjs
+```
+
+本地开发时，用 **设置 → 插件 → 从文件安装…** 选择 `dist/lldb-debug-<版本>-darwin.zip` 安装。
+
+`plugin.json` 的完整格式见 Rust Core 仓库里的
+[插件契约](https://github.com/Lithe-IDEA/Lithe-core-rust/blob/main/shared/plugins/contract/v1/README.md)
+和[调试适配器插件指南](https://github.com/Lithe-IDEA/Lithe-core-rust/blob/main/shared/plugins/guides/debug-adapter-plugin.md)。
+
+## 发布新版本
+
+1. 按语义化版本修改 `plugin.json` 的 `version`：只修 Bug 升修订号，加功能升次版本号，有不兼容的变化升主版本号。
+   合入 `main`。
+2. 推送同名标签：
+
+   ```bash
+   git tag v0.0.1 && git push origin v0.0.1
+   ```
+
+3. `Release` 工作流会核对标签与版本、打包并发布 Release（说明里附 SHA-256）。`release.yml` 里 `PRERELEASE_TAGS`
+   列出的版本会标为预发布版本：目前是只能装进新版桌面端的 `v0.0.1`。
+4. Lithe Store 的自动追踪会发现稳定版本并开合并请求。自动追踪会跳过预发布版本；需要收录时在 Store 中手工提交条目，
+   并使用已发布 ZIP 的实际 SHA-256。
+
+## 许可
 
 [Apache-2.0](LICENSE)

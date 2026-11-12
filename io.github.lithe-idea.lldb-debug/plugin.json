@@ -1,14 +1,13 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 0,
   "id": "io.github.lithe-idea.lldb-debug",
   "displayName": "LLDB Debugger",
-  "version": "0.1.0",
-  "pluginAPIVersion": 4,
+  "version": "0.0.1",
+  "pluginAPIVersion": 0,
   "requires": {
-    "debugAdapters": 1,
-    "languages": 1,
-    "serverProcess": 1,
-    "settings": 2
+    "debugAdapters": 0,
+    "languages": 0,
+    "settings": 0
   },
   "vendor": {
     "id": "io.github.lithe-idea",
