@@ -53,6 +53,8 @@ Program 设置按项目保存，修改后从下一次调试开始生效。
 ```text
 io.github.lithe-idea.lldb-debug/plugin.json   # 插件描述，目录名必须等于插件 id
 scripts/package.mjs                           # 校验清单，打包成 dist/lldb-debug-<版本>-darwin.zip
+scripts/e2e-host.mjs                          # 在固定版本的宿主里运行 e2e/host/ 的测试
+e2e/host/                                     # 宿主端到端测试和宿主版本固定文件 lithe-host.json
 .github/workflows/ci.yml                      # PR 时打包，并用 Lithe Store 的规则检查
 .github/workflows/release.yml                 # 推送 v<版本> 标签时发布 GitHub Release
 docs/releases/v<版本>.md                       # 该版本的变化，发布时并入 Release 说明（可选）
@@ -69,6 +71,25 @@ node scripts/package.mjs
 `plugin.json` 的完整格式见 Rust Core 仓库里的
 [插件契约](https://github.com/Lithe-IDEA/Lithe-core-rust/blob/main/shared/plugins/contract/v1/README.md)
 和[调试适配器插件指南](https://github.com/Lithe-IDEA/Lithe-core-rust/blob/main/shared/plugins/guides/debug-adapter-plugin.md)。
+
+## 宿主端到端测试
+
+`e2e/host/` 里的测试通过 Lithe 桌面端自己的测试工具（宿主的 `desktop/internal/workbench` 包）装上插件，
+用 `clang -g` 编译一个 C 程序，经真实的 `lldb-dap` 和 Rust Core 启动调试、命中断点。这些测试原来放在 Lithe 主仓库，
+按“宿主不依赖插件”的要求（[1lck/Lithe-IDEA#1915](https://github.com/1lck/Lithe-IDEA/pull/1915)）移到这里：
+主仓库不读取本仓库，`e2e/host/lithe-host.json` 记录测试最后一次通过时的宿主版本。
+
+需要 Node.js 22+、Go、Rust 工具链（构建宿主固定的 Rust Core）、`git`、`clang` 和 `lldb-dap`：
+
+```bash
+node scripts/e2e-host.mjs
+```
+
+测试默认使用本仓库的 `io.github.lithe-idea.lldb-debug/plugin.json`；要测别的清单，把它的绝对路径写进
+`LITHE_TEST_DEBUG_PLUGIN_MANIFEST`。脚本把固定版本的宿主（只取 `desktop/` 和 `scripts/`）检出到 `.artifacts/lithe-host`，
+复制 `e2e/host/desktop/` 下的测试，再在那里运行宿主的 `scripts/desktop/desktop-go.sh test`；第一次运行会克隆并构建
+Rust Core，`LITHE_CORE_RUST_DIR` 可以指向本地的 Core 检出。`--ref <分支或 commit>` 换一个宿主版本试跑，
+`--run <正则>` 只跑部分测试。测试用的是宿主内部的测试工具，升级 `lithe-host.json` 的 `revision` 时可能要同步修改测试。
 
 ## 发布新版本
 
