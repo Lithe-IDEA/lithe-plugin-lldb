@@ -1,0 +1,13 @@
+{
+  "repository": "https://github.com/1lck/Lithe-IDEA.git",
+  "revision": "059d878d4284e1a1fd218aeaa56c29d9753d4dfa",
+  "packages": {
+    "./internal/workbench": "^TestDebugRealLLDBLaunchTargetAndBreakpoints$"
+  },
+  "requiredEnvironment": {
+    "LITHE_TEST_DEBUG_PLUGIN_MANIFEST": "plugin.json to debug with; defaults to this repository's"
+  },
+  "repositoryEnvironment": {
+    "LITHE_TEST_DEBUG_PLUGIN_MANIFEST": "io.github.lithe-idea.lldb-debug/plugin.json"
+  }
+}
