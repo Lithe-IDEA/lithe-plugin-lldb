@@ -2,19 +2,25 @@
   "schemaVersion": 0,
   "id": "io.github.lithe-idea.lldb-debug",
   "displayName": "LLDB Debugger",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "pluginAPIVersion": 0,
   "requires": {
+    "commandInstallers": 0,
     "debugAdapters": 0,
     "languages": 0,
-    "settings": 0
+    "settings": 0,
+    "toolDefinitions": 0
   },
+  "requiresTools": [
+    "io.github.lithe-idea.lldb-debug:homebrew"
+  ],
   "vendor": {
     "id": "io.github.lithe-idea",
     "displayName": "Lithe-IDEA",
     "signatureRequirement": "none"
   },
   "permissions": [
+    "commands.install",
     "debug.launch"
   ],
   "activationEvents": [
@@ -233,6 +239,98 @@
           }
         },
         "transport": "stdio"
+      }
+    }
+  ],
+  "toolDefinitions": [
+    {
+      "id": "io.github.lithe-idea.lldb-debug:homebrew",
+      "displayName": "Homebrew",
+      "executableLayouts": [
+        {
+          "path": "bin/brew",
+          "platforms": [
+            "macos"
+          ]
+        }
+      ],
+      "executables": [
+        {
+          "id": "shell",
+          "kind": "command",
+          "command": "brew",
+          "platforms": [
+            "macos"
+          ]
+        },
+        {
+          "id": "detected",
+          "kind": "toolchain",
+          "scope": "installed"
+        }
+      ],
+      "version": {
+        "arguments": [
+          "--version"
+        ],
+        "pattern": "Homebrew (\\d+(?:\\.\\d+)*)"
+      },
+      "discovery": [
+        {
+          "root": {
+            "kind": "absolute",
+            "path": "/opt"
+          },
+          "pattern": "homebrew",
+          "platforms": [
+            "macos"
+          ]
+        },
+        {
+          "root": {
+            "kind": "absolute",
+            "path": "/usr"
+          },
+          "pattern": "local",
+          "platforms": [
+            "macos"
+          ]
+        }
+      ],
+      "commands": [
+        "brew"
+      ],
+      "launch": [
+        "${executable}",
+        "${arguments}"
+      ]
+    }
+  ],
+  "commandInstallers": [
+    {
+      "id": "lldb-dap",
+      "commands": [
+        "lldb-dap"
+      ],
+      "tool": "io.github.lithe-idea.lldb-debug:homebrew",
+      "arguments": [
+        "install",
+        "llvm"
+      ],
+      "mayUseNetwork": true,
+      "timeoutSeconds": 3600,
+      "targets": {
+        "toolDefault": {
+          "directory": [
+            {
+              "arguments": [
+                "--prefix",
+                "llvm"
+              ],
+              "append": "bin"
+            }
+          ]
+        }
       }
     }
   ]

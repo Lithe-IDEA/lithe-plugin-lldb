@@ -13,6 +13,7 @@ import (
 
 	"github.com/1lck/Lithe-IDEA/desktop/internal/buildprocess"
 	"github.com/1lck/Lithe-IDEA/desktop/internal/core"
+	"github.com/1lck/Lithe-IDEA/desktop/internal/pluginhost"
 	"github.com/1lck/Lithe-IDEA/desktop/internal/pluginstate"
 	"github.com/1lck/Lithe-IDEA/desktop/internal/store"
 )
@@ -29,9 +30,9 @@ func TestDebugRealLLDBLaunchTargetAndBreakpoints(t *testing.T) {
 		t.Fatal(err)
 	}
 	validationContext, cancelValidation := context.WithTimeout(context.Background(), 5*time.Second)
-	_, validationErr := core.NewClient().ValidatePluginManifest(validationContext, manifest, map[string][]int{
-		"debugAdapters": {0}, "languages": {0}, "settings": {0},
-	})
+	// The capabilities this host serves, so the manifest is admitted the way an
+	// installation admits it.
+	_, validationErr := core.NewClient().ValidatePluginManifest(validationContext, manifest, pluginhost.Declared())
 	cancelValidation()
 	if validationErr != nil {
 		t.Fatal(validationErr)

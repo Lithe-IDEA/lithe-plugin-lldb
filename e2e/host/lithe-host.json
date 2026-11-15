@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/1lck/Lithe-IDEA.git",
-  "revision": "059d878d4284e1a1fd218aeaa56c29d9753d4dfa",
+  "revision": "4032c5ca0fad2d2c1986ead37d719ec1f9f0502e",
   "packages": {
     "./internal/workbench": "^TestDebugRealLLDBLaunchTargetAndBreakpoints$"
   },
