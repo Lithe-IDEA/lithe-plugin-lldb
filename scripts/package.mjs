@@ -4,7 +4,8 @@
 //
 // The package is a single plugin.json: it only declares how Lithe starts the
 // user's own lldb-dap, so it carries no executable and one archive serves
-// every Mac. Nothing is downloaded at build or install time.
+// every Mac. Nothing is downloaded at build or install time; the lldb-dap
+// installer it declares runs Homebrew only when the user asks for it in Lithe.
 //
 // Usage: node scripts/package.mjs [--expect-tag <tag>]
 

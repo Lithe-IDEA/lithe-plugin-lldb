@@ -35,3 +35,22 @@ jobs:
             }
             process.exit(failed ? 1 : 0);
           "
+
+  # The declared debug adapter and lldb-dap installer with the real programs on
+  # macOS: a debug session with the lldb-dap Lithe finds today (Xcode's, through
+  # xcrun), the declared `brew install lldb`, and a session with the lldb-dap it
+  # installed.
+  commands:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Debug with the system lldb-dap, then install lldb-dap with Homebrew and debug with it
+        run: |
+          xcrun --find lldb-dap
+          brew --version
+          brew list --versions lldb llvm || echo "lldb is not installed yet"
+          node scripts/test.mjs

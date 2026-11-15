@@ -11,20 +11,39 @@
 > `debugAdapters` contract; it is a single `plugin.json` and carries no debugger.
 
 > **预发布**：按插件契约 v0（`schemaVersion: 0`、`pluginAPIVersion: 0`）编写，只能装进新版 Lithe 桌面端
-> （`desktop-v*` 预发布），旧版 macOS Lithe 无法安装。
+> （`desktop-v*` 预发布），旧版 macOS Lithe 无法安装。0.1.0 起插件声明了 `lldb-dap` 的安装方式，需要支持
+> `commandInstallers` 的桌面端（[1lck/Lithe-IDEA#1971](https://github.com/1lck/Lithe-IDEA/pull/1971)）；更早的桌面端请用 0.0.1。
 
 ## 依赖的程序
 
-- `lldb-dap`。Lithe 先在 `PATH` 里找，找不到时在 macOS 上用 `xcrun --find lldb-dap` 找 Xcode 自带的版本。
-  可以用 `xcode-select --install` 安装 Xcode 命令行工具，或者安装 Xcode 或 LLVM。
+- `lldb-dap`。Lithe 先在 `PATH` 里找，找不到时在 macOS 上用 `xcrun --find lldb-dap` 找 Xcode 自带的版本，
+  再找在 Lithe 里安装时记下的目录。Xcode 和 Xcode 命令行工具（`xcode-select --install`）都带 `lldb-dap`；
+  都没有时可以在 Lithe 里用 Homebrew 安装，见[在 Lithe 里安装 lldb-dap](#在-lithe-里安装-lldb-dap)。
 - 带调试信息的程序，例如 `clang -g main.c -o main`（`gcc -g` 也可以）。
+
+### 在 Lithe 里安装 lldb-dap
+
+1. 打开 **设置 → 插件 → 已安装**，选中 LLDB Debugger，切到 **功能**。
+2. 找不到 `lldb-dap` 时，调试能力卡片上显示“未找到 lldb-dap”，旁边有 **安装** 按钮。
+3. 点击后核对要运行的命令，确认后开始安装，输出显示在对话框里。Lithe 用 Homebrew 运行 `brew install lldb`，
+   装好后在 `$(brew --prefix lldb)/bin` 里找到 `lldb-dap` 并记下这个目录，之后调试直接用它，不需要改 `PATH`。
+
+需要先装好 [Homebrew](https://brew.sh)（它会一并要求 Xcode 命令行工具；Homebrew 的 LLDB 用命令行工具里的
+`debugserver` 启动程序）。Lithe 在 `PATH`、`/opt/homebrew` 和 `/usr/local` 里找 `brew`。安装需要联网，会下载 LLDB
+和它依赖的 LLVM、Python（几百 MB，装好后超过 1 GB），通常几分钟。Homebrew 只给 Apple Silicon 上的 macOS 15 及以上
+提供预编译包；Intel Mac 和更早的 macOS 上会从源码编译，可能超过一小时的安装时限，这时请改用 Xcode 或命令行工具自带的
+`lldb-dap`。LLDB 和 LLVM 都是 keg-only，不会链接进 `/opt/homebrew/bin`，也不会替换系统的 `lldb`、`clang`。
+安装位置是 Homebrew 自己的目录，卸载插件时不删除，不需要时用 `brew uninstall lldb` 删掉，再用 `brew autoremove`
+删掉不再需要的依赖。也可以自己在终端运行 `brew install lldb`，再把 `$(brew --prefix lldb)/bin` 加进 Lithe 能看到的
+`PATH`。
 
 ## 安装
 
 1. 从 [Releases](https://github.com/Lithe-IDEA/lithe-plugin-lldb/releases) 下载 `lldb-debug-<版本>-darwin.zip`。
 2. 在 Lithe 中打开 **设置 → 插件**，点击页面标题栏右侧的 **从文件安装…**，选中这个 zip，核对 SHA-256 和权限后确认。
 
-插件会请求 `debug.launch` 权限，用来启动你电脑上的 `lldb-dap`。装好后打开 C / Rust / Swift 文件，设置断点并开始调试。
+插件会请求 `debug.launch` 权限，用来启动你电脑上的 `lldb-dap`；还会请求 `commands.install` 权限，
+只在你点击 **安装** 并确认后用 Homebrew 安装 `lldb-dap`。装好后打开 C / Rust / Swift 文件，设置断点并开始调试。
 
 ## 可执行文件设置
 
@@ -53,9 +72,10 @@ Program 设置按项目保存，修改后从下一次调试开始生效。
 ```text
 io.github.lithe-idea.lldb-debug/plugin.json   # 插件描述，目录名必须等于插件 id
 scripts/package.mjs                           # 校验清单，打包成 dist/lldb-debug-<版本>-darwin.zip
+scripts/test.mjs                              # 用真实的 lldb-dap 和 Homebrew 运行清单声明的调试和安装
 scripts/e2e-host.mjs                          # 在固定版本的宿主里运行 e2e/host/ 的测试
 e2e/host/                                     # 宿主端到端测试和宿主版本固定文件 lithe-host.json
-.github/workflows/ci.yml                      # PR 时打包，并用 Lithe Store 的规则检查
+.github/workflows/ci.yml                      # PR 时打包、用 Lithe Store 的规则检查，并在 macOS 上运行 scripts/test.mjs
 .github/workflows/release.yml                 # 推送 v<版本> 标签时发布 GitHub Release
 docs/releases/v<版本>.md                       # 该版本的变化，发布时并入 Release 说明（可选）
 ```
@@ -67,6 +87,14 @@ node scripts/package.mjs
 ```
 
 本地开发时，用 **设置 → 插件 → 从文件安装…** 选择 `dist/lldb-debug-<版本>-darwin.zip` 安装。
+
+`scripts/test.mjs` 用 `clang -g` 编译一个 C 程序，按清单的声明启动调试：先用 `PATH` 或 `xcrun` 找到的 `lldb-dap`
+命中断点、读出局部变量并运行到退出，再按安装器的声明用 Homebrew 运行 `brew install lldb`，从目录探针给出的目录启动
+装好的 `lldb-dap` 再调试一次。安装会下载 LLDB 和 LLVM，本地只想测调试时设 `LITHE_TEST_INSTALL=0`：
+
+```bash
+LITHE_TEST_INSTALL=0 node scripts/test.mjs
+```
 
 `plugin.json` 的完整格式见 Rust Core 仓库里的
 [插件契约](https://github.com/Lithe-IDEA/Lithe-core-rust/blob/main/shared/plugins/contract/v1/README.md)
@@ -98,11 +126,11 @@ Rust Core，`LITHE_CORE_RUST_DIR` 可以指向本地的 Core 检出。`--ref <�
 2. 推送同名标签：
 
    ```bash
-   git tag v0.0.1 && git push origin v0.0.1
+   git tag v0.1.0 && git push origin v0.1.0
    ```
 
 3. `Release` 工作流会核对标签与版本、打包并发布 Release（说明里附 SHA-256）。`release.yml` 里 `PRERELEASE_TAGS`
-   列出的版本会标为预发布版本：目前是只能装进新版桌面端的 `v0.0.1`。
+   列出的版本会标为预发布版本：目前是只能装进新版桌面端的 `v0.0.1` 和 `v0.1.0`。
 4. Lithe Store 的自动追踪会发现稳定版本并开合并请求。自动追踪会跳过预发布版本；需要收录时在 Store 中手工提交条目，
    并使用已发布 ZIP 的实际 SHA-256。
 
