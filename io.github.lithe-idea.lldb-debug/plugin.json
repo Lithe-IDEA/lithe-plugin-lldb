@@ -315,7 +315,7 @@
       "tool": "io.github.lithe-idea.lldb-debug:homebrew",
       "arguments": [
         "install",
-        "llvm"
+        "lldb"
       ],
       "mayUseNetwork": true,
       "timeoutSeconds": 3600,
@@ -325,7 +325,7 @@
             {
               "arguments": [
                 "--prefix",
-                "llvm"
+                "lldb"
               ],
               "append": "bin"
             }

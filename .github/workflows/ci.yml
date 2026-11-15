@@ -38,7 +38,7 @@ jobs:
 
   # The declared debug adapter and lldb-dap installer with the real programs on
   # macOS: a debug session with the lldb-dap Lithe finds today (Xcode's, through
-  # xcrun), the declared `brew install llvm`, and a session with the lldb-dap it
+  # xcrun), the declared `brew install lldb`, and a session with the lldb-dap it
   # installed.
   commands:
     runs-on: macos-latest
@@ -52,5 +52,5 @@ jobs:
         run: |
           xcrun --find lldb-dap
           brew --version
-          brew list --versions llvm || echo "llvm is not installed yet"
+          brew list --versions lldb llvm || echo "lldb is not installed yet"
           node scripts/test.mjs

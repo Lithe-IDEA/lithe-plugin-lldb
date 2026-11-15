@@ -10,13 +10,14 @@
 //   declared install, and the directory probe names the directory lldb-dap lands in;
 // - the same debug session with that installed lldb-dap.
 //
-// LITHE_TEST_INSTALL=0 skips the install, which downloads LLVM (several hundred MB).
+// LITHE_TEST_INSTALL=0 skips the install, which downloads LLDB and the LLVM it depends on
+// (several hundred MB).
 //
 // Usage: node scripts/test.mjs
 
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { isAbsolute, join } from "node:path";
 
@@ -228,7 +229,8 @@ try {
       assert.ok(isAbsolute(prefix), `brew ${probe.arguments.join(" ")} printed ${JSON.stringify(prefix)}`);
       const directory = join(prefix, probe.append ?? "");
       for (const command of installer.commands) {
-        assert.ok(existsSync(join(directory, command)), `${command} in ${directory}`);
+        const listing = existsSync(directory) ? readdirSync(directory).join(" ") : "(missing)";
+        assert.ok(existsSync(join(directory, command)), `${command} in ${directory}, which holds: ${listing}`);
       }
       installed = join(directory, installer.commands[0]);
     });

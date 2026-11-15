@@ -25,14 +25,17 @@
 
 1. 打开 **设置 → 插件 → 已安装**，选中 LLDB Debugger，切到 **功能**。
 2. 找不到 `lldb-dap` 时，调试能力卡片上显示“未找到 lldb-dap”，旁边有 **安装** 按钮。
-3. 点击后核对要运行的命令，确认后开始安装，输出显示在对话框里。Lithe 用 Homebrew 运行 `brew install llvm`，
-   装好后在 `$(brew --prefix llvm)/bin` 里找到 `lldb-dap` 并记下这个目录，之后调试直接用它，不需要改 `PATH`。
+3. 点击后核对要运行的命令，确认后开始安装，输出显示在对话框里。Lithe 用 Homebrew 运行 `brew install lldb`，
+   装好后在 `$(brew --prefix lldb)/bin` 里找到 `lldb-dap` 并记下这个目录，之后调试直接用它，不需要改 `PATH`。
 
-需要先装好 [Homebrew](https://brew.sh)（它会一并要求 Xcode 命令行工具）。Lithe 在 `PATH`、`/opt/homebrew` 和
-`/usr/local` 里找 `brew`。安装需要联网，会下载完整的 LLVM（几百 MB，装好后超过 1 GB），可能要几分钟；
-LLVM 是 keg-only，不会链接进 `/opt/homebrew/bin`，也不会替换系统的 `clang`。安装位置是 Homebrew 自己的目录，
-卸载插件时不删除，不需要时用 `brew uninstall llvm` 删掉。也可以自己在终端运行 `brew install llvm`，
-再把 `$(brew --prefix llvm)/bin` 加进 Lithe 能看到的 `PATH`。
+需要先装好 [Homebrew](https://brew.sh)（它会一并要求 Xcode 命令行工具；Homebrew 的 LLDB 用命令行工具里的
+`debugserver` 启动程序）。Lithe 在 `PATH`、`/opt/homebrew` 和 `/usr/local` 里找 `brew`。安装需要联网，会下载 LLDB
+和它依赖的 LLVM、Python（几百 MB，装好后超过 1 GB），通常几分钟。Homebrew 只给 Apple Silicon 上的 macOS 15 及以上
+提供预编译包；Intel Mac 和更早的 macOS 上会从源码编译，可能超过一小时的安装时限，这时请改用 Xcode 或命令行工具自带的
+`lldb-dap`。LLDB 和 LLVM 都是 keg-only，不会链接进 `/opt/homebrew/bin`，也不会替换系统的 `lldb`、`clang`。
+安装位置是 Homebrew 自己的目录，卸载插件时不删除，不需要时用 `brew uninstall lldb` 删掉，再用 `brew autoremove`
+删掉不再需要的依赖。也可以自己在终端运行 `brew install lldb`，再把 `$(brew --prefix lldb)/bin` 加进 Lithe 能看到的
+`PATH`。
 
 ## 安装
 
@@ -86,8 +89,8 @@ node scripts/package.mjs
 本地开发时，用 **设置 → 插件 → 从文件安装…** 选择 `dist/lldb-debug-<版本>-darwin.zip` 安装。
 
 `scripts/test.mjs` 用 `clang -g` 编译一个 C 程序，按清单的声明启动调试：先用 `PATH` 或 `xcrun` 找到的 `lldb-dap`
-命中断点、读出局部变量并运行到退出，再按安装器的声明用 Homebrew 运行 `brew install llvm`，从目录探针给出的目录启动
-装好的 `lldb-dap` 再调试一次。安装会下载 LLVM，本地只想测调试时设 `LITHE_TEST_INSTALL=0`：
+命中断点、读出局部变量并运行到退出，再按安装器的声明用 Homebrew 运行 `brew install lldb`，从目录探针给出的目录启动
+装好的 `lldb-dap` 再调试一次。安装会下载 LLDB 和 LLVM，本地只想测调试时设 `LITHE_TEST_INSTALL=0`：
 
 ```bash
 LITHE_TEST_INSTALL=0 node scripts/test.mjs
