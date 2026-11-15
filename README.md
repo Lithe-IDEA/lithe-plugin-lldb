@@ -10,7 +10,7 @@
 > [`lldb-dap`](https://lldb.llvm.org/resources/lldbdap.html). A community plugin built on the declarative
 > `debugAdapters` contract; it is a single `plugin.json` and carries no debugger.
 
-> **预发布**：按插件契约 v0（`schemaVersion: 0`、`pluginAPIVersion: 0`）编写，只能装进新版 Lithe 桌面端
+> **兼容性**：按插件契约 v0（`schemaVersion: 0`、`pluginAPIVersion: 0`）编写，只能装进新版 Lithe 桌面端
 > （`desktop-v*` 预发布），旧版 macOS Lithe 无法安装。0.1.0 起插件声明了 `lldb-dap` 的安装方式，需要支持
 > `commandInstallers` 的桌面端（[1lck/Lithe-IDEA#1971](https://github.com/1lck/Lithe-IDEA/pull/1971)）；更早的桌面端请用 0.0.1。
 
@@ -130,7 +130,7 @@ Rust Core，`LITHE_CORE_RUST_DIR` 可以指向本地的 Core 检出。`--ref <�
    ```
 
 3. `Release` 工作流会核对标签与版本、打包并发布 Release（说明里附 SHA-256）。`release.yml` 里 `PRERELEASE_TAGS`
-   列出的版本会标为预发布版本：目前是只能装进新版桌面端的 `v0.0.1` 和 `v0.1.0`。
+   列出的版本会标为预发布版本：目前是只能装进新版桌面端的 `v0.0.1`；`v0.1.0` 起作为正式版本发布。
 4. Lithe Store 的自动追踪会发现稳定版本并开合并请求。自动追踪会跳过预发布版本；需要收录时在 Store 中手工提交条目，
    并使用已发布 ZIP 的实际 SHA-256。
 
