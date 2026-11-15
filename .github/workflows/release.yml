@@ -30,8 +30,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           # v0.0.1 follows plugin contract v0, which only the new desktop
           # client installs, and that client ships as desktop-v* pre-releases.
-          # v0.1.0 also needs a desktop client with commandInstallers.
-          PRERELEASE_TAGS: v0.0.1 v0.1.0
+          # v0.1.0 needs a desktop client with commandInstallers, but is published
+          # as a stable release; the Store keeps 0.0.1 for older clients.
+          PRERELEASE_TAGS: v0.0.1
         run: |
           prerelease=false
           for tag in $PRERELEASE_TAGS; do
